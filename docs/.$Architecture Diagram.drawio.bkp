@@ -1,0 +1,25 @@
+<mxfile host="Electron">
+  <diagram name="페이지-1" id="_KZydGT0mE9NQdEvpzKa">
+    <mxGraphModel dx="706" dy="437" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WXI8w55jTttZWu3z9gPu-4" edge="1" parent="1" source="WXI8w55jTttZWu3z9gPu-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="WXI8w55jTttZWu3z9gPu-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WXI8w55jTttZWu3z9gPu-1" parent="1" style="whiteSpace=wrap;html=1;" value="API Gateway" vertex="1">
+          <mxGeometry height="40" width="90" x="120" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="WXI8w55jTttZWu3z9gPu-2" parent="1" style="whiteSpace=wrap;html=1;" value="Lambda" vertex="1">
+          <mxGeometry height="40" width="90" x="290" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="WXI8w55jTttZWu3z9gPu-3" parent="1" style="strokeWidth=2;html=1;shape=mxgraph.flowchart.database;whiteSpace=wrap;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;" value="DynamoDB" vertex="1">
+          <mxGeometry height="60" width="80" x="460" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="WXI8w55jTttZWu3z9gPu-5" edge="1" parent="1" source="WXI8w55jTttZWu3z9gPu-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="WXI8w55jTttZWu3z9gPu-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
