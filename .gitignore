@@ -1,0 +1,25 @@
+# Environment
+.env
+.env.*
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+**/dist/
+
+# pnpm
+.pnpm-store/
+
+# SAM / AWS
+.aws-sam/
+samconfig.toml
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
