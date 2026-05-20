@@ -1,0 +1,9 @@
+{
+	"devDependencies": {
+		"vitest": "^4.1.6"
+	},
+	"dependencies": {
+		"@aws-sdk/client-dynamodb": "^3.1050.0",
+		"@aws-sdk/lib-dynamodb": "^3.1050.0"
+	}
+}
