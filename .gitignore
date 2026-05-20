@@ -23,3 +23,12 @@ samconfig.toml
 # OS
 .DS_Store
 Thumbs.db
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+override.tf
+override.tf.json
