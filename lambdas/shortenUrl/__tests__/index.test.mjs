@@ -4,8 +4,10 @@ vi.mock('../service.mjs', () => ({
   getShortUrl: vi.fn()
 }));
 
-const { getShortUrl } = await import('../service.mjs');
-const { handler } = await import('../index.mjs');
+import { getShortUrl } from '../service.mjs';
+import { handler } from '../index.mjs';
+
+const mockedGetShortUrl = vi.mocked(getShortUrl);
 
 describe('handler', () => {
   beforeEach(() => {
@@ -13,7 +15,7 @@ describe('handler', () => {
   });
 
   it('정상 요청에 200과 shortUrl을 반환한다', async () => {
-    getShortUrl.mockResolvedValue({ shortUrl: 'https://short.example.com/abc12' });
+    mockedGetShortUrl.mockResolvedValue({ shortUrl: 'https://short.example.com/abc12' });
 
     const result = await handler({ body: JSON.stringify({ url: 'https://www.google.com' }) });
 
@@ -22,7 +24,7 @@ describe('handler', () => {
   });
 
   it('url 누락 시 400을 반환한다', async () => {
-    getShortUrl.mockRejectedValue(Object.assign(new Error('Missing url parameter')));
+    mockedGetShortUrl.mockRejectedValue(Object.assign(new Error('Missing url parameter')));
 
     const result = await handler({ body: JSON.stringify({}) });
 
@@ -31,7 +33,7 @@ describe('handler', () => {
   });
 
   it('DynamoDB 서버 오류 시 500을 반환한다', async () => {
-    getShortUrl.mockRejectedValue(new Error('ProvisionedThroughputExceededException'));
+    mockedGetShortUrl.mockRejectedValue(new Error('ProvisionedThroughputExceededException'));
 
     const result = await handler({ body: JSON.stringify({ url: 'https://www.google.com' }) });
 
@@ -39,7 +41,7 @@ describe('handler', () => {
   });
 
   it('body가 null이면 url 누락으로 처리된다', async () => {
-    getShortUrl.mockRejectedValue(new Error('Missing url parameter'));
+    mockedGetShortUrl.mockRejectedValue(new Error('Missing url parameter'));
 
     const result = await handler({ body: null });
 

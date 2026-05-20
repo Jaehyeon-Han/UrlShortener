@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../shared/config.mjs', () => ({
   config: {
@@ -8,7 +8,7 @@ vi.mock('../../../shared/config.mjs', () => ({
   }
 }));
 
-const { default: generateCode } = await import('../shortCode.mjs');
+import generateCode from '../shortCode.mjs';
 
 const BASE62 = /^[a-zA-Z0-9]+$/;
 

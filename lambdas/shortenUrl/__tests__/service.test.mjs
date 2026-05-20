@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../shared/repository.mjs', () => ({
   findByOriginalUrl: vi.fn(),
@@ -13,8 +13,11 @@ vi.mock('../../../shared/config.mjs', () => ({
   }
 }));
 
-const repository = await import('../../../shared/repository.mjs');
-const { getShortUrl } = await import('../service.mjs');
+import * as repository from '../../../shared/repository.mjs';
+import { getShortUrl } from '../service.mjs';
+
+const mockedFindByOriginalUrl = vi.mocked(repository.findByOriginalUrl);
+const mockedSave = vi.mocked(repository.save);
 
 describe('getShortUrl', () => {
   beforeEach(() => {
@@ -27,40 +30,40 @@ describe('getShortUrl', () => {
   });
 
   it('이미 존재하는 URL이면 기존 shortUrl을 반환한다', async () => {
-    repository.findByOriginalUrl.mockResolvedValue({ shortCode: 'abc12' });
+    mockedFindByOriginalUrl.mockResolvedValue({ shortCode: 'abc12' });
 
     const result = await getShortUrl('https://www.google.com');
 
     expect(result).toEqual({ shortUrl: 'https://short.example.com/abc12' });
-    expect(repository.save).not.toHaveBeenCalled();
+    expect(mockedSave).not.toHaveBeenCalled();
   });
 
   it('새 URL이면 저장 후 shortUrl을 반환한다', async () => {
-    repository.findByOriginalUrl.mockResolvedValue(null);
-    repository.save.mockResolvedValue(undefined);
+    mockedFindByOriginalUrl.mockResolvedValue(null);
+    mockedSave.mockResolvedValue(undefined);
 
     const result = await getShortUrl('https://www.naver.com');
 
     expect(result.shortUrl).toMatch(/^https:\/\/short\.example\.com\/[a-zA-Z0-9]{5}$/);
-    expect(repository.save).toHaveBeenCalledOnce();
+    expect(mockedSave).toHaveBeenCalledOnce();
   });
 
   it('ConditionalCheckFailedException 발생 시 재시도하여 성공한다', async () => {
-    repository.findByOriginalUrl.mockResolvedValue(null);
+    mockedFindByOriginalUrl.mockResolvedValue(null);
     const collision = Object.assign(new Error('Collision'), { name: 'ConditionalCheckFailedException' });
-    repository.save
+    mockedSave
       .mockRejectedValueOnce(collision)
       .mockResolvedValueOnce(undefined);
 
     const result = await getShortUrl('https://www.naver.com');
 
     expect(result.shortUrl).toMatch(/^https:\/\/short\.example\.com\//);
-    expect(repository.save).toHaveBeenCalledTimes(2);
+    expect(mockedSave).toHaveBeenCalledTimes(2);
   });
 
   it('DynamoDB 예상치 못한 에러는 그대로 던진다', async () => {
-    repository.findByOriginalUrl.mockResolvedValue(null);
-    repository.save.mockRejectedValue(new Error('ProvisionedThroughputExceededException'));
+    mockedFindByOriginalUrl.mockResolvedValue(null);
+    mockedSave.mockRejectedValue(new Error('ProvisionedThroughputExceededException'));
 
     await expect(getShortUrl('https://www.naver.com')).rejects.toThrow('ProvisionedThroughputExceededException');
   });
