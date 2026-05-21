@@ -2,6 +2,9 @@
 .env
 .env.*
 
+# Local test scripts (may contain sensitive info like webhook URLs)
+**/test-local.mjs
+
 # Dependencies
 node_modules/
 **/node_modules/
