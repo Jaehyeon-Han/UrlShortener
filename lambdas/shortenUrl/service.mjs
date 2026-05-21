@@ -2,6 +2,7 @@ import { config } from '../../shared/config.mjs';
 import * as repository from '../../shared/repository.mjs';
 import generateCode from './shortCode.mjs';
 
+/** @param {string} originalUrl */
 export async function getShortUrl(originalUrl) {
   if (!originalUrl) {
     throw new Error('Missing url parameter');
