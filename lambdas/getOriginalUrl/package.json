@@ -1,0 +1,22 @@
+{
+  "name": "get-original-url",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lambda code to get the original URL with the short URL",
+  "main": "index.mjs",
+  "scripts": {
+    "build": "esbuild index.mjs --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:@aws-sdk/*",
+    "test": "vitest"
+  },
+  "author": "Jaehyeon Han",
+  "license": "ISC",
+  "packageManager": "pnpm@10.7.1",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1049.0",
+    "@aws-sdk/lib-dynamodb": "^3.1049.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "vitest": "^4.1.6"
+  }
+}
