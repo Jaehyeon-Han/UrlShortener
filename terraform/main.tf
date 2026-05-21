@@ -7,6 +7,10 @@ data "aws_iam_role" "shorten_lambda_role" {
   name = var.shorten_lambda_role_name
 }
 
+data "aws_iam_role" "get_original_lambda_role" {
+  name = var.getOriginalUrl_lambda_role_name
+}
+
 data "aws_iam_role" "authorize_lambda_role" {
   name = var.authorize_lambda_role_name
 }
@@ -66,6 +70,30 @@ resource "aws_lambda_function" "shorten_url" {
   }
 }
 
+resource "aws_lambda_function" "get_original_url" {
+  function_name = "getOriginalUrl"
+
+  role    = data.aws_iam_role.get_original_lambda_role.arn
+  handler = "index.handler"
+  runtime = "nodejs24.x"
+
+  filename         = "dummy.zip"
+  source_code_hash = filebase64sha256("dummy.zip")
+
+  environment {
+    variables = {
+      DISCORD_WEBHOOK_URL = var.discord_webhook_url
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      filename,
+      source_code_hash
+    ]
+  }
+}
+
 resource "aws_lambda_function" "authorizer" {
   function_name = "authorizeUrlShortening"
 
@@ -90,8 +118,6 @@ resource "aws_lambda_function" "authorizer" {
   }
 }
 
-// Todo: 람다 추가
-
 // --- API Gateway
 
 resource "aws_apigatewayv2_api" "url_shortener" {
@@ -109,7 +135,14 @@ resource "aws_apigatewayv2_integration" "shorten" {
   payload_format_version = "2.0"
 }
 
-// Todo: Redirect Ingeration 추가
+resource "aws_apigatewayv2_integration" "redirect" {
+  api_id = aws_apigatewayv2_api.url_shortener.id
+
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.get_original_url.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
 
 resource "aws_apigatewayv2_route" "shorten" {
   api_id             = aws_apigatewayv2_api.url_shortener.id
@@ -117,6 +150,12 @@ resource "aws_apigatewayv2_route" "shorten" {
   target             = "integrations/${aws_apigatewayv2_integration.shorten.id}"
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.shorten_authorizer.id
+}
+
+resource "aws_apigatewayv2_route" "redirect" {
+  api_id    = aws_apigatewayv2_api.url_shortener.id
+  route_key = "GET /{shortCode}"
+  target    = "integrations/${aws_apigatewayv2_integration.redirect.id}"
 }
 
 resource "aws_apigatewayv2_stage" "default" {
@@ -154,6 +193,14 @@ resource "aws_lambda_permission" "shorten" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.url_shortener.execution_arn}/*/*/shorten"
   // {execution_arn}/{stage}/{method}/{path}
+}
+
+resource "aws_lambda_permission" "redirect" {
+  statement_id  = "54472628-5f49-54c4-aa34-596aea91911d"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.get_original_url.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.url_shortener.execution_arn}/*/*/{shortCode}"
 }
 
 resource "aws_lambda_permission" "authorizer" {

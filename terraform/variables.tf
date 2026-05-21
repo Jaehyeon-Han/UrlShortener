@@ -6,3 +6,7 @@ variable "secret" {
   type      = string
   sensitive = true
 }
+variable "discord_webhook_url" {
+  type      = string
+  sensitive = true
+}
