@@ -6,7 +6,7 @@
   "main": "index.mjs",
   "scripts": {
     "build": "esbuild index.mjs --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:@aws-sdk/*",
-    "test": "vitest"
+    "test": "vitest --passWithNoTests"
   },
   "author": "Jaehyeon Han",
   "license": "ISC",
