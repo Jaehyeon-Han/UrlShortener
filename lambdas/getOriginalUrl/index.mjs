@@ -15,7 +15,7 @@ export const handler = async (event) => {
   if (!originalUrl) {
     return {
       statusCode: 404,
-      body: "Url not found"
+      body: "Url not found!"
     }
   }
 

@@ -8,11 +8,30 @@ on:
       - 'shared/**'
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      lambdas: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shortenUrl:
+              - 'lambdas/shortenUrl/**'
+              - 'shared/**'
+            getOriginalUrl:
+              - 'lambdas/getOriginalUrl/**'
+              - 'shared/**'
+
   test-and-build:
+    needs: changes
+    if: ${{ needs.changes.outputs.lambdas != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lambda: [shortenUrl, getOriginalUrl]
+        lambda: ${{ fromJSON(needs.changes.outputs.lambdas) }}
     steps:
       - uses: actions/checkout@v4
 
@@ -49,11 +68,12 @@ jobs:
           path: lambdas/${{ matrix.lambda }}/dist/${{ matrix.lambda }}.zip
 
   deploy:
-    needs: test-and-build
+    needs: [changes, test-and-build]
+    if: ${{ needs.changes.outputs.lambdas != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        lambda: [shortenUrl, getOriginalUrl]
+        lambda: ${{ fromJSON(needs.changes.outputs.lambdas) }}
     permissions:
       id-token: write
       contents: read
@@ -73,7 +93,8 @@ jobs:
         run: |
           aws lambda update-function-code \
             --function-name ${{ matrix.lambda }} \
-            --zip-file fileb://${{ matrix.lambda }}.zip
+            --zip-file fileb://${{ matrix.lambda }}.zip \
+            --output none
 
           aws lambda wait function-updated \
             --function-name ${{ matrix.lambda }}
