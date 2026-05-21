@@ -1,0 +1,79 @@
+name: Deploy Lambdas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lambdas/**'
+      - 'shared/**'
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lambda: [shortenUrl, getOriginalUrl]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: lambdas/${{ matrix.lambda }}/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: lambdas/${{ matrix.lambda }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        working-directory: lambdas/${{ matrix.lambda }}
+        run: pnpm test -- --run
+
+      - name: Build
+        working-directory: lambdas/${{ matrix.lambda }}
+        run: pnpm build
+
+      - name: Zip
+        working-directory: lambdas/${{ matrix.lambda }}/dist
+        run: zip ${{ matrix.lambda }}.zip index.mjs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.lambda }}
+          path: lambdas/${{ matrix.lambda }}/dist/${{ matrix.lambda }}.zip
+
+  deploy:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lambda: [shortenUrl, getOriginalUrl]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.lambda }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ matrix.lambda }} \
+            --zip-file fileb://${{ matrix.lambda }}.zip
+
+          aws lambda wait function-updated \
+            --function-name ${{ matrix.lambda }}
