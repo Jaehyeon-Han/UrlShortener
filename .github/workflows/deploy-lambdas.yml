@@ -94,7 +94,7 @@ jobs:
           aws lambda update-function-code \
             --function-name ${{ matrix.lambda }} \
             --zip-file fileb://${{ matrix.lambda }}.zip \
-            --output none
+            > /dev/null
 
           aws lambda wait function-updated \
             --function-name ${{ matrix.lambda }}
